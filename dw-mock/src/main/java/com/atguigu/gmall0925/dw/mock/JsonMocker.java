@@ -152,9 +152,14 @@ public class JsonMocker {
         for (int i = 0; i < jsonMocker.startupNum; i++) {
             String startupLog = jsonMocker.initStartupLog();
             jsonMocker.sendLog(startupLog);
-            while (jsonMocker.isQuitGroup.getRandomOpt().getValue()) {
+            while (!jsonMocker.isQuitGroup.getRandomOpt().getValue()) {
                 String eventLog = jsonMocker.initEventLog(startupLog);
                 jsonMocker.sendLog(eventLog);
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
