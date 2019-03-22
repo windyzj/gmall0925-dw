@@ -7,6 +7,7 @@ import java.util.Date
 import com.alibaba.fastjson.JSON
 import com.atguigu.gmall0925.dw.bean.StartUpLog
 import com.atguigu.gmall0925.dw.constant.GmallConstants
+import com.atguigu.gmall0925.dw.util.MyEsUtil
 import com.atguigu.gmall0925.dw.utils.MyKafkaUtil
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.spark.broadcast.Broadcast
@@ -15,6 +16,8 @@ import org.apache.spark.streaming.dstream.{DStream, InputDStream}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import redis.clients.jedis.Jedis
+
+import scala.collection.mutable.ListBuffer
 
 object RealtimeStartupLog {
 
@@ -57,13 +60,30 @@ object RealtimeStartupLog {
       rdd.foreachPartition { startupItr =>
 
         val jedis = new Jedis("hadoop1", 6379) //driver
-
+         val list = new ListBuffer[StartUpLog]()
         startupItr.foreach { startupLog =>
-          val dateString: String = new SimpleDateFormat("yyyy-MM-dd").format(new Date(startupLog.ts))
+          val datetimeString: String = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(startupLog.ts))
+          val datetimeArray: Array[String] = datetimeString.split(" ")
+          val dateString: String = datetimeArray(0)
+          val timeArray: Array[String] = datetimeArray(1).split(":")
+          val hour: String = timeArray(0)
+          val minute: String = timeArray(1)
+
           val key = "dau:" + dateString
           jedis.sadd(key, startupLog.mid)
+
+          //补充 一些时间字段 用户 es中的时间分析
+          startupLog.logDate=dateString
+          startupLog.logHour=hour
+          startupLog.logHourMinute=hour+":"+minute
+
+
+          list+=startupLog
         }
         jedis.close()
+        MyEsUtil.executeIndexBulk(GmallConstants.ES_INDEX_DAU,list.toList,"")
+
+
       }
     }
 
@@ -75,5 +95,6 @@ object RealtimeStartupLog {
     ssc.awaitTermination()
 
   }
+
 
 }

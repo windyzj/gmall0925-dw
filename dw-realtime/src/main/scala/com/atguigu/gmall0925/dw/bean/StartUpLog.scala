@@ -8,9 +8,9 @@ case class StartUpLog(mid:String,
                       ch:String,
                       logType:String,
                       vs:String,
-                      var logDate:String,
-                      var logHour:String,
-                      var logHourMinute:String,
+                      var logDate:String,   //年-月-日
+                      var logHour:String,   //小时数
+                      var logHourMinute:String,  //小时：分钟
                       var ts:Long
                      ) {
 
