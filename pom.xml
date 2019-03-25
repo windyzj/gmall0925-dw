@@ -15,6 +15,8 @@
         <module>dw-interceptor</module>
         <module>dw-adsRegionTop3sku</module>
         <module>dw-realtime</module>
+        <module>dw-canal</module>
+        <module>dw-dw2es</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
