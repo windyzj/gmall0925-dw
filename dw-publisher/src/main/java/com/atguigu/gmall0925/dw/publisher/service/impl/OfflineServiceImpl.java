@@ -34,4 +34,10 @@ public class OfflineServiceImpl  implements OfflineService{
 
         return regionTop3SkuListWithParam;
     }
+
+
+
+
+
+
 }
